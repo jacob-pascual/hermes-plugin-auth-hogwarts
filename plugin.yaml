@@ -1,0 +1,8 @@
+# kind: model-provider routes this to provider discovery rather than the
+# general PluginManager. The name here is also the directory Hermes clones
+# into under $HERMES_HOME/plugins/.
+name: hogwarts
+kind: model-provider
+version: 1.0.0
+description: Self-hosted Qwen3.8-Flash-Next at llm.pascuals.org, behind Zitadel OIDC
+author: Jacob Pascual
