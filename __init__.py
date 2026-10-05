@@ -1,4 +1,4 @@
-"""Hermes model provider for the self-hosted LLM at llm.pascuals.org.
+"""Hermes model provider for the self-hosted models at llm.pascuals.org.
 
 Login is browser-based OAuth 2.0 Authorization Code + PKCE against Zitadel at
 auth.pascuals.org. Hermes owns the whole lifecycle once this profile is
@@ -32,10 +32,10 @@ API = "https://llm.pascuals.org/v1"
 # forged one.
 #
 # redirect_port is pinned rather than left at 0 (OS-assigned). OAuth redirect
-# URIs must match what the provider registered, and Zitadel holds a fixed list:
-# 8765, then 8080 and 51337 as fallbacks if that port is already in use.
+# URIs must match what the provider registered, and Zitadel holds exactly one:
+# http://127.0.0.1:8765/callback.
 _OAUTH = OAuthPKCEConfig(
-    client_id="392117023330533817",
+    client_id="393751994755448952",
     authorize_url=f"{ISSUER}/oauth/v2/authorize",
     token_url=f"{ISSUER}/oauth/v2/token",
     # offline_access is what makes a refresh token come back; without it the
@@ -50,7 +50,7 @@ hogwarts = ProviderProfile(
     name="hogwarts",
     aliases=("pascuals",),
     display_name="Hogwarts",
-    description="Self-hosted Qwen3.8-Flash-Next on ExLlamaV3, behind Zitadel",
+    description="Self-hosted Qwen3.8 at llm.pascuals.org, behind Zitadel",
     signup_url=ISSUER,
     base_url=API,
     api_mode="chat_completions",
@@ -59,14 +59,14 @@ hogwarts = ProviderProfile(
     # deployment without editing this plugin.
     env_vars=("HOGWARTS_API_KEY", "HOGWARTS_BASE_URL"),
     # Used before the catalogue can be fetched, and if /models is unreachable.
-    fallback_models=("Qwen3.8-Flash-Next-EXL3-3.05bpw",),
+    fallback_models=("qwen3.8-27b",),
     model_capabilities={
-        "Qwen3.8-Flash-Next-EXL3-3.05bpw": {
+        "qwen3.8-27b": {
             "supports_reasoning": True,
             "supports_vision": True,
             "supports_tools": True,
-            # 262k native. The server is configured for the full window.
-            "context_window": 262144,
+            # vLLM serves the model with --max-model-len 131072.
+            "context_window": 131072,
             "model_family": "qwen",
         },
     },

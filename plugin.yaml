@@ -4,5 +4,5 @@
 name: hogwarts
 kind: model-provider
 version: 1.0.0
-description: Self-hosted Qwen3.8-Flash-Next at llm.pascuals.org, behind Zitadel OIDC
+description: Self-hosted Qwen3.8 at llm.pascuals.org, behind Zitadel OIDC
 author: Jacob Pascual
