@@ -59,7 +59,7 @@ hogwarts = ProviderProfile(
     # deployment without editing this plugin.
     env_vars=("HOGWARTS_API_KEY", "HOGWARTS_BASE_URL"),
     # Used before the catalogue can be fetched, and if /models is unreachable.
-    fallback_models=("qwen3.8-27b", "qwen3.8-flash-next"),
+    fallback_models=("qwen3.8-27b", "qwen3.8-flash-next", "glm-5.3-flash", "glm-5.3"),
     model_capabilities={
         "qwen3.8-27b": {
             "supports_reasoning": True,
@@ -76,6 +76,22 @@ hogwarts = ProviderProfile(
             # 262k native, and TabbyAPI serves the full window.
             "context_window": 262144,
             "model_family": "qwen",
+        },
+        # The two GLM models are served with max_seq_len 131072. Most of their experts run on
+        # the CPU: expect about 21 tok/s for the Flash model and about 6 tok/s for the full one.
+        "glm-5.3-flash": {
+            "supports_reasoning": True,
+            "supports_vision": True,
+            "supports_tools": True,
+            "context_window": 131072,
+            "model_family": "glm",
+        },
+        "glm-5.3": {
+            "supports_reasoning": True,
+            "supports_vision": False,
+            "supports_tools": True,
+            "context_window": 131072,
+            "model_family": "glm",
         },
     },
     auth_handler=pkce_auth_handler(_OAUTH),
