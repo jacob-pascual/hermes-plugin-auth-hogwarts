@@ -59,13 +59,21 @@ hogwarts = ProviderProfile(
     # deployment without editing this plugin.
     env_vars=("HOGWARTS_API_KEY", "HOGWARTS_BASE_URL"),
     # Used before the catalogue can be fetched, and if /models is unreachable.
-    fallback_models=("qwen3.8-27b",),
+    fallback_models=("qwen3.8-27b", "qwen3.8-flash-next"),
     model_capabilities={
         "qwen3.8-27b": {
             "supports_reasoning": True,
             "supports_vision": True,
             "supports_tools": True,
             # vLLM serves the model with --max-model-len 131072.
+            "context_window": 131072,
+            "model_family": "qwen",
+        },
+        "qwen3.8-flash-next": {
+            "supports_reasoning": True,
+            "supports_vision": True,
+            "supports_tools": True,
+            # 262k native. TabbyAPI serves it with max_seq_len 131072.
             "context_window": 131072,
             "model_family": "qwen",
         },
