@@ -73,8 +73,8 @@ hogwarts = ProviderProfile(
             "supports_reasoning": True,
             "supports_vision": True,
             "supports_tools": True,
-            # 262k native. TabbyAPI serves it with max_seq_len 131072.
-            "context_window": 131072,
+            # 262k native, and TabbyAPI serves the full window.
+            "context_window": 262144,
             "model_family": "qwen",
         },
     },
