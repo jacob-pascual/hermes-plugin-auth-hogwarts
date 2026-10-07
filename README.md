@@ -1,7 +1,7 @@
 # hermes-plugin-auth-hogwarts
 
-A Hermes model provider and image generation backend for the self-hosted
-models at `llm.pascuals.org`.
+A Hermes model provider, image generation backend and video generation backend
+for the self-hosted models at `llm.pascuals.org`.
 
 The endpoint is OpenAI-compatible but not open: Envoy Gateway verifies an
 OIDC token on every request before it reaches the inference server. This
@@ -52,6 +52,41 @@ hermes config set image_gen.provider hogwarts
 The server holds one model on its GPU at a time. An image request made from a
 chat stops the chat model, loads the image model, and the next chat turn swaps
 back: expect about six minutes for one 2048x2048 image inside a conversation.
+
+## Video generation
+
+`video_gen/` is a third plugin: a backend for Hermes' `video_generate` tool,
+for the video models on the same endpoint. It uses the token of the `hogwarts`
+provider, like the image backend.
+
+```sh
+mkdir -p ~/.hermes/plugins/video_gen
+ln -s ~/.hermes/plugins/hogwarts/video_gen ~/.hermes/plugins/video_gen/hogwarts
+hermes plugins enable video_gen/hogwarts
+hermes tools enable video_gen
+hermes config set video_gen.provider hogwarts
+hermes config set video_gen.model ltx-2.5
+```
+
+`hermes tools enable video_gen` matters: the video toolset is off by default,
+and without it the agent has no `video_generate` tool at all.
+
+| `video_gen.model` | Input | Output | Time on the server |
+|---|---|---|---|
+| `ltx-2.5` | Prompt, optional first frame | 720p or 1080p, 2 to 10 s, with sound | About 2 minutes for 5 s at 720p |
+| `mochi-1-preview` | Prompt | 848x480, 1 to 5 s, no sound | About 4 minutes for each second of video |
+
+The agent does not pick the model: `video_gen.model` does. The server answers
+one request with the finished video, and that request is what keeps the model
+on the GPU, so there is no job to poll.
+
+Hermes stops a tool call after 420 seconds by default. A video takes longer
+than that when the server must first swap models, and Mochi always does:
+
+```sh
+hermes config set timeouts.tools.sequential_call 4800
+hermes config set timeouts.tools.concurrent_batch 4800
+```
 
 ## What you need
 

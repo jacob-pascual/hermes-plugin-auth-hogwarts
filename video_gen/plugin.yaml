@@ -1,0 +1,7 @@
+# kind: backend makes this a video generation backend. Hermes loads it from
+# $HERMES_HOME/plugins/video_gen/hogwarts/ after `hermes plugins enable video_gen/hogwarts`.
+name: hogwarts
+kind: backend
+version: 1.0.0
+description: LTX 2.5 and Mochi 1 at llm.pascuals.org, with the login of the provider hogwarts
+author: Jacob Pascual
