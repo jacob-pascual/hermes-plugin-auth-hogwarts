@@ -59,7 +59,14 @@ hogwarts = ProviderProfile(
     # deployment without editing this plugin.
     env_vars=("HOGWARTS_API_KEY", "HOGWARTS_BASE_URL"),
     # Used before the catalogue can be fetched, and if /models is unreachable.
-    fallback_models=("qwen3.8-27b", "qwen3.8-flash-next", "glm-5.3-flash", "glm-5.3"),
+    fallback_models=(
+        "qwen3.8-27b",
+        "qwen3.8-flash-next",
+        "qwen3.8-27b-uncensored",
+        "qwen3.8-flash-next-uncensored",
+        "glm-5.3-flash",
+        "glm-5.3",
+    ),
     model_capabilities={
         "qwen3.8-27b": {
             "supports_reasoning": True,
@@ -74,6 +81,22 @@ hogwarts = ProviderProfile(
             "supports_vision": True,
             "supports_tools": True,
             # 262k native, and TabbyAPI serves the full window.
+            "context_window": 262144,
+            "model_family": "qwen",
+        },
+        # The uncensored versions of the two Qwen models (orcarouter), served next to the Swift
+        # versions above. TabbyAPI serves both with the full 262k window.
+        "qwen3.8-27b-uncensored": {
+            "supports_reasoning": True,
+            "supports_vision": True,
+            "supports_tools": True,
+            "context_window": 262144,
+            "model_family": "qwen",
+        },
+        "qwen3.8-flash-next-uncensored": {
+            "supports_reasoning": True,
+            "supports_vision": True,
+            "supports_tools": True,
             "context_window": 262144,
             "model_family": "qwen",
         },
