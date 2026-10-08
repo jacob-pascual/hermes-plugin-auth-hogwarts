@@ -33,11 +33,8 @@ from agent.video_gen_provider import (
 )
 
 PROVIDER = "hogwarts"
-# The gateway routes a video request on this header. Its AI filter, which reads the model from
-# the body for chat and image requests, does not know the path of videos.
-MODEL_HEADER = "x-ai-eg-model"
 # The GPU holds one model. A request can wait 20 minutes while the server stops the chat model
-# and loads the video model, and the gateway gives the model one hour for the video.
+# and loads the video model. The gateway stops a request that sends no data for one hour.
 TIMEOUT_SECONDS = 4800
 
 # ``sizes`` maps (aspect ratio, resolution) to a size that the server accepts for the model.
@@ -224,11 +221,7 @@ class HogwartsVideoGenProvider(VideoGenProvider):
             request = urllib.request.Request(
                 f"{base_url}/videos/generations",
                 data=json.dumps(body).encode(),
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
-                    MODEL_HEADER: model,
-                },
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
             )
             with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
                 answer = json.load(response)
