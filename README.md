@@ -1,7 +1,7 @@
 # hermes-plugin-auth-hogwarts
 
-A Hermes model provider, image generation backend and video generation backend
-for the self-hosted models at `llm.pascuals.org`.
+A Hermes model provider, image generation backend, video generation backend and
+file upload tool for the self-hosted services at `pascuals.org`.
 
 The endpoint is OpenAI-compatible but not open: Envoy Gateway verifies an
 OIDC token on every request before it reaches the inference server. This
@@ -87,6 +87,36 @@ than that when the server must first swap models, and Mochi always does:
 hermes config set timeouts.tools.sequential_call 4800
 hermes config set timeouts.tools.concurrent_batch 4800
 ```
+
+## File upload
+
+`upload/` is a fourth plugin: the tool `upload_file`. Many tools take only a
+public URL (the `image_url` of `video_generate` says so to the agent), and a
+local file has none. The tool uploads the file to the bucket `uploads` at
+`s3.pascuals.org` and returns a signed URL.
+
+```sh
+ln -s ~/.hermes/plugins/hogwarts/upload ~/.hermes/plugins/hogwarts-upload
+hermes plugins enable hogwarts-upload
+```
+
+| | |
+|---|---|
+| Input | `path`, and `expires_seconds` if you want (900 to 43200, default 3600) |
+| Output | A signed HTTPS URL. Anyone who has it can read the file until it expires. |
+| Lifetime | The storage deletes the file after one day. |
+| Limits | 1 GiB. Not for credential stores or `.env` files (the rule of the Hermes read tool). |
+
+There is no S3 key to configure. The storage is Ceph RGW, and the tool sends
+the token of the `hogwarts` provider to its STS call
+(`AssumeRoleWithWebIdentity`). It gets keys that live as long as the URL, and
+only a token with the role `hermes` gets them. The requests are signed with
+AWS Signature Version 4 from the standard library, because Hermes ships no
+`boto3`.
+
+One thing to know if you change the signing: Ceph 20 refuses a request whose
+`content-type` or `x-amz-*` headers are not signed, and it answers
+`AccessDenied`, not `SignatureDoesNotMatch`.
 
 ## What you need
 

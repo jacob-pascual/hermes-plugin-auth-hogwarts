@@ -1,0 +1,6 @@
+# A general plugin with one tool. Hermes loads it from $HERMES_HOME/plugins/hogwarts-upload/
+# after `hermes plugins enable hogwarts-upload`.
+name: hogwarts-upload
+version: 1.0.0
+description: Upload a local file to temporary storage at s3.pascuals.org and get a signed URL
+author: Jacob Pascual
