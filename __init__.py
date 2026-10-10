@@ -110,20 +110,23 @@ hogwarts = ProviderProfile(
             "context_window": 262144,
             "model_family": "qwen",
         },
-        # The two GLM models are served with max_seq_len 131072. Most of their experts run on
-        # the CPU: expect about 21 tok/s for the Flash model and about 6 tok/s for the full one.
+        # The two GLM models are served with max_seq_len 1048576, the largest window they
+        # permit. Most of their experts run on the CPU: expect about 16 tok/s for the Flash
+        # model. The full model gave about 6 tok/s with a window of 131072; its rate with this
+        # window is not measured. A long prompt is slow to read (the Flash model read 337 tok/s),
+        # and the gateway drops a request that sends no data for an hour.
         "glm-5.3-flash": {
             "supports_reasoning": True,
             "supports_vision": True,
             "supports_tools": True,
-            "context_window": 131072,
+            "context_window": 1048576,
             "model_family": "glm",
         },
         "glm-5.3": {
             "supports_reasoning": True,
             "supports_vision": False,
             "supports_tools": True,
-            "context_window": 131072,
+            "context_window": 1048576,
             "model_family": "glm",
         },
     },
