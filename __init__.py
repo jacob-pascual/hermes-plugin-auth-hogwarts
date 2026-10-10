@@ -13,6 +13,8 @@ client, which is why the id can live in a public repository: PKCE is the
 proof, not a secret.
 """
 
+import socket
+
 from providers import register_provider
 from providers.base import ProviderProfile
 
@@ -24,6 +26,12 @@ from hermes_cli.auth_oauth_pkce_plugin import (
 
 ISSUER = "https://auth.pascuals.org"
 API = "https://llm.pascuals.org/v1"
+
+# The router at llm.pascuals.org rejects a request that does not name the program and the host
+# it comes from. Its monitor shows both names, so a request can be traced back to the machine
+# that sent it; the client address alone cannot do that behind a NAT router. The host is the
+# short hostname, without the ".local" that macOS appends.
+IDENTITY = {"X-Pascuals-App": "hermes", "X-Pascuals-Host": socket.gethostname().split(".")[0]}
 
 # The access token is verified by Envoy Gateway at the edge, against the JWKS
 # this issuer publishes, before any request reaches the inference server. The
@@ -58,6 +66,7 @@ hogwarts = ProviderProfile(
     # A trailing *_BASE_URL entry lets a user point the same profile at another
     # deployment without editing this plugin.
     env_vars=("HOGWARTS_API_KEY", "HOGWARTS_BASE_URL"),
+    default_headers=dict(IDENTITY),
     # Used before the catalogue can be fetched, and if /models is unreachable.
     fallback_models=(
         "qwen3.8-27b",

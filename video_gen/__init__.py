@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import base64
 import json
+import socket
 import mimetypes
 import urllib.error
 import urllib.request
@@ -69,6 +70,11 @@ MODELS: dict[str, dict[str, Any]] = {
     },
 }
 DEFAULT_MODEL = "ltx-2.5"
+
+
+# The router rejects a request without these two headers. They are the headers that the
+# model provider in the parent directory sends with a chat request.
+IDENTITY = {"X-Pascuals-App": "hermes", "X-Pascuals-Host": socket.gethostname().split(".")[0]}
 
 
 def _endpoint() -> tuple[str, str]:
@@ -221,7 +227,7 @@ class HogwartsVideoGenProvider(VideoGenProvider):
             request = urllib.request.Request(
                 f"{base_url}/videos/generations",
                 data=json.dumps(body).encode(),
-                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", **IDENTITY},
             )
             with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
                 answer = json.load(response)

@@ -13,6 +13,7 @@ that token.
 from __future__ import annotations
 
 import json
+import socket
 import urllib.error
 import urllib.request
 from typing import Any
@@ -33,6 +34,11 @@ SIZES = {"landscape": "2752x1536", "square": "2048x2048", "portrait": "1536x2752
 # The GPU holds one model. A request can wait while the server stops the chat model and loads
 # the image model; the server gives up after 20 minutes.
 TIMEOUT_SECONDS = 1500
+
+
+# The router rejects a request without these two headers. They are the headers that the
+# model provider in the parent directory sends with a chat request.
+IDENTITY = {"X-Pascuals-App": "hermes", "X-Pascuals-Host": socket.gethostname().split(".")[0]}
 
 
 def _endpoint() -> tuple[str, str]:
@@ -105,7 +111,7 @@ class HogwartsImageGenProvider(ImageGenProvider):
         request = urllib.request.Request(
             f"{base_url}/images/generations",
             data=json.dumps({"model": MODEL, "prompt": prompt, "size": size, "n": 1}).encode(),
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", **IDENTITY},
         )
         try:
             with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
