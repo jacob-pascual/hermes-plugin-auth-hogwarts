@@ -14,6 +14,7 @@ proof, not a secret.
 """
 
 import socket
+from typing import Any
 
 from providers import register_provider
 from providers.base import ProviderProfile
@@ -129,5 +130,29 @@ hogwarts = ProviderProfile(
     auth_handler=pkce_auth_handler(_OAUTH),
     refresh_credential=pkce_refresh_credential(_OAUTH),
 )
+
+
+
+def _with_session(
+    *, reasoning_config: dict | None = None, session_id: str | None = None, **context: Any
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """The stock extras, plus the session of the conversation as a header on the chat request.
+
+    ``extra_headers`` is the per-request header argument of the OpenAI client; the bundled
+    OpenRouter profile sends ``x-grok-conv-id`` the same way. The monitor of the router shows
+    the value in its SESSION column, which ties a request to one Hermes session.
+    """
+    extra_body, top_level = ProviderProfile.build_api_kwargs_extras(
+        hogwarts, reasoning_config=reasoning_config, **context
+    )
+    if session_id:
+        top_level = {**top_level, "extra_headers": {"X-Pascuals-Session-Id": str(session_id)}}
+    return extra_body, top_level
+
+
+# Set on the instance, not in a subclass: the auxiliary client treats a profile whose *class*
+# overrides build_api_kwargs_extras as one that handles reasoning itself, and then stops sending
+# its generic reasoning fallback. This hook only adds a header, so that fallback must stay.
+hogwarts.build_api_kwargs_extras = _with_session
 
 register_provider(hogwarts)

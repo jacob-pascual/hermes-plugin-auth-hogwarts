@@ -41,6 +41,17 @@ TIMEOUT_SECONDS = 1500
 IDENTITY = {"X-Pascuals-App": "hermes", "X-Pascuals-Host": socket.gethostname().split(".")[0]}
 
 
+def _identity() -> dict[str, str]:
+    """``IDENTITY`` plus the Hermes session that asked for this generation, when there is one."""
+    try:
+        from gateway.session_context import get_session_env
+
+        session = get_session_env("HERMES_SESSION_ID", "")
+    except Exception:  # noqa: BLE001 - the header is optional; a generation must not fail for it
+        session = ""
+    return {**IDENTITY, "X-Pascuals-Session-Id": session} if session else dict(IDENTITY)
+
+
 def _endpoint() -> tuple[str, str]:
     """``(base_url, token)`` of the provider, from the resolution that chat uses; ``("", "")``
     when the user is not logged in."""
@@ -111,7 +122,7 @@ class HogwartsImageGenProvider(ImageGenProvider):
         request = urllib.request.Request(
             f"{base_url}/images/generations",
             data=json.dumps({"model": MODEL, "prompt": prompt, "size": size, "n": 1}).encode(),
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", **IDENTITY},
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", **_identity()},
         )
         try:
             with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
