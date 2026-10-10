@@ -88,6 +88,31 @@ hermes config set timeouts.tools.sequential_call 4800
 hermes config set timeouts.tools.concurrent_batch 4800
 ```
 
+## Timeouts
+
+Hermes stops a chat request that sends no text for 180 seconds (300 seconds
+for a prompt of more than 100,000 tokens). Two cases at `llm.pascuals.org`
+are longer than that:
+
+- A request waits in the queue of the router and gets no data: a different
+  model has the GPU, or (for `glm-5.3-flash`) a different request of the same
+  program and host is in progress.
+- A model reads a long prompt. `glm-5.3-flash` read 198,440 tokens in 13
+  minutes 45 seconds, and sends only keep-alive lines during that time.
+
+The gateway stops a request that sends no data for 1 hour, thus give Hermes
+the same limit:
+
+```sh
+hermes config set providers.hogwarts.request_timeout_seconds 3600
+hermes config set providers.hogwarts.stale_timeout_seconds 3600
+```
+
+The first is the time that Hermes waits for the next data of a request, also
+for the first. The second is the time without text in an answer before Hermes
+stops it as stale. A Hermes that runs reads the two values at its next
+request.
+
 ## File upload
 
 `upload/` is a fourth plugin: the tool `upload_file`. Many tools take only a
